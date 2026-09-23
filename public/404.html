@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 — IdeaRank</title>
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="icon" type="image/png" href="/logo.png">
+    <link rel="apple-touch-icon" href="/logo.png">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <style>
+        body.error-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(160deg, #f8fafc 0%, #ffffff 50%, #eff6ff 100%);
+            padding: 2rem;
+            text-align: center;
+        }
+
+        html[data-theme="dark"] body.error-page {
+            background: linear-gradient(160deg, #0b1220 0%, #0f172a 50%, #0c1525 100%);
+        }
+
+        .error-card {
+            max-width: 440px;
+            width: 100%;
+            padding: 3rem 2rem;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(148, 163, 184, 0.22);
+            box-shadow: 0 24px 60px rgba(2, 6, 23, 0.10);
+        }
+
+        html[data-theme="dark"] .error-card {
+            background: rgba(15, 23, 42, 0.6);
+            border-color: rgba(148, 163, 184, 0.16);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .error-code {
+            font-size: 6rem;
+            font-weight: 900;
+            line-height: 1;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            opacity: 0.22;
+            letter-spacing: -0.05em;
+        }
+
+        .error-icon {
+            font-size: 56px;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            opacity: 0.9;
+        }
+
+        .error-title {
+            font-size: 1.625rem;
+            font-weight: 800;
+            margin-bottom: 0.75rem;
+            color: var(--text-color);
+            letter-spacing: -0.02em;
+        }
+
+        .error-desc {
+            color: var(--secondary-text);
+            margin-bottom: 1.75rem;
+            line-height: 1.55;
+            font-size: 1rem;
+        }
+
+        .error-actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .error-actions a {
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body class="error-page">
+    <div class="error-card">
+        <div class="error-code">404</div>
+        <div class="error-icon"><span class="material-symbols-outlined">sentiment_dissatisfied</span></div>
+        <h1 class="error-title">This idea got lost</h1>
+        <p class="error-desc">We couldn't find the page you're looking for. Maybe it needs a pivot.</p>
+        <div class="error-actions">
+            <a href="/" class="primary-btn">Back home</a>
+            <a href="/dashboard.html" class="secondary-btn">Open dashboard</a>
+        </div>
+    </div>
+
+    <script src="/script.js"></script>
+</body>
+
+</html>

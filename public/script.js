@@ -20,7 +20,7 @@ const translations = {
         'landing.features.logic.desc': 'No generic praise. Our AI is tuned to find the holes in your strategy and help you pivot.',
         'landing.features.share.title': 'Shareable Proof',
         'landing.features.share.desc': 'Generate high-quality scorecards to share with co-founders or investors instantly.',
-        'landing.footer': '© 2024 IdeaRank Analysis Engine. Transparent. Critical. Data-Driven.',
+        'landing.footer': '© 2026 IdeaRank Analysis Engine. Transparent. Critical. Data-Driven.',
 
         // Ranker
         'ranker.title': 'Idea Ranker',
@@ -132,7 +132,7 @@ const translations = {
         'landing.features.logic.desc': 'Sin elogios genéricos. Nuestra IA está ajustada para encontrar los agujeros en tu estrategia y ayudarte a pivotar.',
         'landing.features.share.title': 'Prueba Compartible',
         'landing.features.share.desc': 'Genera tarjetas de puntuación de alta calidad para compartir con cofundadores o inversores al instante.',
-        'landing.footer': '© 2024 Motor de Análisis IdeaRank. Transparente. Crítico. Basado en Datos.',
+        'landing.footer': '© 2026 Motor de Análisis IdeaRank. Transparente. Crítico. Basado en Datos.',
 
         // Ranker
         'ranker.title': 'Clasificador de Ideas',
@@ -244,7 +244,7 @@ const translations = {
         'landing.features.logic.desc': '没有泛泛的赞美。我们的AI经过调整，能找出您策略中的漏洞并帮助您转向。',
         'landing.features.share.title': '可分享证明',
         'landing.features.share.desc': '生成高质量的记分卡，可立即与联合创始人或投资者分享。',
-        'landing.footer': '© 2024 IdeaRank分析引擎。透明。批判。数据驱动。',
+        'landing.footer': '© 2026 IdeaRank分析引擎。透明。批判。数据驱动。',
 
         // Ranker
         'ranker.title': '创意排名器',
@@ -344,6 +344,7 @@ let currentLanguage = 'en';
 let currentTool = 'ranker';
 let analysisHistory = JSON.parse(localStorage.getItem('ideaRankHistory') || '[]');
 let settings = JSON.parse(localStorage.getItem('ideaRankSettings') || '{}');
+window.currentAnalysis = null;
 
 // Default settings
 const defaultSettings = {
@@ -686,6 +687,8 @@ async function analyzeProblem(problem) {
 
 // Display analysis results
 function displayAnalysis(analysis, type = 'rank') {
+    window.currentAnalysis = analysis;
+
     const toolView = document.getElementById('toolView');
     const toolOutput = document.getElementById('toolOutput');
     const mount = toolOutput || toolView;
@@ -913,73 +916,198 @@ function copyAnalysisSummary() {
     });
 }
 
-// Download scorecard
+// Canvas helpers for scorecard export
+function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+}
+
+function wrapText(ctx, text, x, y, maxWidth, lineHeight, returnLines = false) {
+    const words = text.split(' ');
+    let line = '';
+    let lines = 0;
+    for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        if (ctx.measureText(testLine).width > maxWidth && n > 0) {
+            ctx.fillText(line, x, y);
+            line = words[n] + ' ';
+            y += lineHeight;
+            lines++;
+        } else {
+            line = testLine;
+        }
+    }
+    ctx.fillText(line, x, y);
+    return returnLines ? lines + 1 : y;
+}
+
+// Download scorecard as a polished PNG
 function downloadScorecard() {
-    // Create a simple scorecard image
+    const analysis = window.currentAnalysis;
+    if (!analysis) {
+        showToast('No scorecard to download', 'error');
+        return;
+    }
+
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    canvas.width = 800;
-    canvas.height = 600;
+    const W = 800;
+    const H = 1400;
+    const scale = 2;
+    canvas.width = W * scale;
+    canvas.height = H * scale;
+    ctx.scale(scale, scale);
 
-    // Fill background with gradient
-    const gradient = ctx.createLinearGradient(0, 0, 0, 600);
-    gradient.addColorStop(0, '#2563eb');
-    gradient.addColorStop(1, '#1d4ed8');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Background
+    const bg = ctx.createLinearGradient(0, 0, W, H);
+    bg.addColorStop(0, '#f8fafc');
+    bg.addColorStop(0.5, '#ffffff');
+    bg.addColorStop(1, '#eff6ff');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
 
-    // Add white overlay for content
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-    ctx.fillRect(20, 20, canvas.width - 40, canvas.height - 40);
+    // Top accent bar
+    ctx.fillStyle = '#2563eb';
+    ctx.fillRect(0, 0, W, 8);
 
-    // Add title
-    ctx.fillStyle = '#1a1a1a';
-    ctx.font = 'bold 32px Inter, sans-serif';
-    ctx.fillText('IdeaRank Analysis', 50, 80);
+    // Header
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#1e293b';
+    ctx.font = '800 28px Inter, system-ui, sans-serif';
+    ctx.fillText('IdeaRank', 60, 72);
+    ctx.fillStyle = '#64748b';
+    ctx.font = '600 14px Inter, system-ui, sans-serif';
+    ctx.fillText('Startup Idea Scorecard', 60, 96);
 
-    // Add score
-    const scoreElement = document.querySelector('.score-text .val');
-    if (scoreElement) {
-        ctx.fillStyle = '#2563eb';
-        ctx.font = 'bold 48px Inter, sans-serif';
-        ctx.fillText(`Score: ${scoreElement.textContent}/10`, 50, 140);
-    }
+    // Score circle
+    const score = Number(analysis.score) || 0;
+    const scoreColor = score >= 8 ? '#10b981' : score >= 6 ? '#f59e0b' : '#ef4444';
+    const cx = 180;
+    const cy = 210;
+    const r = 78;
 
-    // Add summary
-    const summaryElement = document.querySelector('.report-grid .card p');
-    if (summaryElement) {
-        ctx.fillStyle = '#1a1a1a';
-        ctx.font = '16px Inter, sans-serif';
-        const summary = summaryElement.textContent;
-        const words = summary.split(' ');
-        let line = '';
-        let y = 200;
-        const maxWidth = 700;
-        const lineHeight = 25;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = 12;
+    ctx.stroke();
 
-        for (let n = 0; n < words.length; n++) {
-            const testLine = line + words[n] + ' ';
-            const metrics = ctx.measureText(testLine);
-            const testWidth = metrics.width;
-            if (testWidth > maxWidth && n > 0) {
-                ctx.fillText(line, 50, y);
-                line = words[n] + ' ';
-                y += lineHeight;
-            } else {
-                line = testLine;
-            }
-        }
-        ctx.fillText(line, 50, y);
-    }
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + (score / 10) * Math.PI * 2);
+    ctx.strokeStyle = scoreColor;
+    ctx.lineWidth = 12;
+    ctx.lineCap = 'round';
+    ctx.stroke();
 
-    // Add footer
-    ctx.fillStyle = '#6b7280';
-    ctx.font = '14px Inter, sans-serif';
-    ctx.fillText('Generated by IdeaRank - Transparent. Critical. Data-Driven.', 50, canvas.height - 50);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#1e293b';
+    ctx.font = '900 52px Inter, system-ui, sans-serif';
+    ctx.fillText(score.toString(), cx, cy + 16);
+    ctx.font = '700 18px Inter, system-ui, sans-serif';
+    ctx.fillStyle = '#64748b';
+    ctx.fillText('/ 10', cx, cy + 40);
 
-    // Download the canvas as image
+    // Tier badge
+    const tier = score >= 8.5 ? { label: 'Excellent Potential', bg: '#dcfce7', text: '#166534' } :
+        score >= 7 ? { label: 'Good Potential', bg: '#dbeafe', text: '#1e40af' } :
+        score >= 5 ? { label: 'Average', bg: '#fef3c7', text: '#92400e' } :
+        { label: 'Needs Work', bg: '#fee2e2', text: '#991b1b' };
+
+    const bx = 320;
+    const by = 170;
+    ctx.fillStyle = tier.bg;
+    roundRect(ctx, bx, by, 220, 38, 19);
+    ctx.fill();
+    ctx.textAlign = 'left';
+    ctx.fillStyle = tier.text;
+    ctx.font = '800 14px Inter, system-ui, sans-serif';
+    ctx.fillText(tier.label, bx + 16, by + 25);
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = '600 14px Inter, system-ui, sans-serif';
+    ctx.fillText(`${analysis.confidence || 'Medium'} confidence · ${(analysis.sources || []).length} signals`, bx, by + 70);
+
+    // Metrics
+    const metrics = [
+        { label: 'TAM', value: (analysis.marketAnalysis && analysis.marketAnalysis.tam) || '-' },
+        { label: 'SAM', value: (analysis.marketAnalysis && analysis.marketAnalysis.sam) || '-' },
+        { label: 'SOM', value: (analysis.marketAnalysis && analysis.marketAnalysis.som) || '-' },
+        { label: 'Demand', value: (analysis.demand && analysis.demand.frequency) || '-' }
+    ];
+    const mY = 340;
+    const mW = 152;
+    const mH = 150;
+    const gap = 18;
+    metrics.forEach((m, i) => {
+        const x = 60 + i * (mW + gap);
+        ctx.fillStyle = '#f1f5f9';
+        roundRect(ctx, x, mY, mW, mH, 12);
+        ctx.fill();
+        ctx.fillStyle = '#64748b';
+        ctx.font = '800 11px Inter, system-ui, sans-serif';
+        ctx.fillText(m.label, x + 14, mY + 24);
+        ctx.fillStyle = '#1e293b';
+        ctx.font = '800 15px Inter, system-ui, sans-serif';
+        wrapText(ctx, m.value, x + 14, mY + 54, mW - 28, 18);
+    });
+
+    // Summary
+    ctx.fillStyle = '#1e293b';
+    ctx.font = '800 18px Inter, system-ui, sans-serif';
+    const summaryY = mY + mH + 52;
+    ctx.fillText('Summary', 60, summaryY);
+    ctx.fillStyle = '#475569';
+    ctx.font = '500 15px Inter, system-ui, sans-serif';
+    const summary = analysis.summary || 'No summary available.';
+    const summaryLines = wrapText(ctx, summary, 60, summaryY + 30, 680, 24, true);
+
+    // SWOT highlights
+    const swotY = summaryY + 30 + summaryLines * 24 + 56;
+    ctx.fillStyle = '#1e293b';
+    ctx.font = '800 18px Inter, system-ui, sans-serif';
+    ctx.fillText('Critical Analysis', 60, swotY);
+
+    const swot = analysis.swot || {};
+    const sections = [
+        { label: 'Strengths', items: swot.strengths || [], color: '#10b981' },
+        { label: 'Weaknesses', items: swot.weaknesses || [], color: '#f59e0b' },
+        { label: 'Opportunities', items: swot.opportunities || [], color: '#3b82f6' },
+        { label: 'Threats', items: swot.threats || [], color: '#ef4444' }
+    ];
+
+    let y = swotY + 32;
+    sections.forEach(section => {
+        if (!section.items.length) return;
+        ctx.fillStyle = section.color;
+        ctx.font = '800 13px Inter, system-ui, sans-serif';
+        ctx.fillText(section.label, 60, y);
+        y += 22;
+        ctx.fillStyle = '#475569';
+        ctx.font = '500 13px Inter, system-ui, sans-serif';
+        section.items.slice(0, 2).forEach(item => {
+            const lines = wrapText(ctx, `• ${item}`, 80, y, 660, 20, true);
+            y += lines * 20 + 6;
+        });
+        y += 12;
+    });
+
+    // Footer
+    ctx.fillStyle = '#cbd5e1';
+    ctx.fillRect(60, H - 76, W - 120, 1);
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '500 13px Inter, system-ui, sans-serif';
+    ctx.fillText('Generated by IdeaRank · Transparent. Critical. Data-Driven.', 60, H - 44);
+    ctx.textAlign = 'right';
+    ctx.fillText(new Date().toLocaleDateString(), W - 60, H - 44);
+
+    // Download
     const link = document.createElement('a');
-    link.download = 'idearank-scorecard.png';
+    link.download = `idearank-scorecard-${Date.now()}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
 }
