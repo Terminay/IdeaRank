@@ -133,11 +133,7 @@ IdeaRank/
 
 ---
 
-<<<<<<< HEAD
-## Deployment
-=======
 ## Current architecture
->>>>>>> 07754c324e54ccbd456eda2f51b299063a8466cf
 
 IdeaRank is a simple, stateless web app: the browser sends your idea to a Node/Express API, which calls Groq (Llama 3.3) and returns the analysis. No database, no sign‑in, no data stored between requests.
 
@@ -196,11 +192,7 @@ flowchart LR
 
 ---
 
-<<<<<<< HEAD
-## Marketing & Growth
-=======
 ## Use cases
->>>>>>> 07754c324e54ccbd456eda2f51b299063a8466cf
 
 - Quickly validate hackathon or weekend‑project ideas.
 - Give founders a “reality check” on market, competition, and execution risk.
